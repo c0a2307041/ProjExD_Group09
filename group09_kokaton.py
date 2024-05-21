@@ -39,10 +39,10 @@ class Bird(pg.sprite.Sprite):
     ゲームキャラクター（こうかとん）に関するクラス
     """
     delta = {  # 押下キーと移動量の辞書
-        pg.K_UP: (0, -1),
-        pg.K_DOWN: (0, +1),
-        pg.K_LEFT: (-1, 0),
-        pg.K_RIGHT: (+1, 0),
+        pg.K_w: (0, -1),
+        pg.K_s: (0, +1),
+        pg.K_a: (-1, 0),
+        pg.K_d: (+1, 0),
     }
 
     def __init__(self, num: int, xy: tuple[int, int]):
@@ -69,6 +69,8 @@ class Bird(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = xy
         self.speed = 10
+        self.state = "normal" #変数stateの設定
+        self.hyper_life = -1 #変数hyper_lifeの設定
 
     def bird_check(self):
         """
@@ -104,6 +106,14 @@ class Bird(pg.sprite.Sprite):
             self.rect.move_ip(-self.speed*sum_mv[0], -self.speed*sum_mv[1])
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
             self.dire = tuple(sum_mv)
+            self.image = self.imgs[self.dire]
+        if self.state == "hyper": #stateがhyper（無敵）の時
+            self.hyper_life -= 1 #1ずつ減少
+            self.image2 = pg.transform.laplacian(self.image)
+            self.images = [self.imgs[self.dire],self.image2]
+            self.image = self.images[self.hyper_life//4%2] #無敵状態の時に使う画像の表示
+        if self.hyper_life < 0: #hyper_lifeが0になったら
+            self.state = "normal" #stateがnormal(通常)になる ＝ 無敵解除
             self.image = self.imgs[self.dire]
         screen.blit(self.image, self.rect)
 
@@ -247,6 +257,62 @@ class Score:
         self.image = self.font.render(f"Score: {self.value}", 0, self.color)
         screen.blit(self.image, self.rect)
 
+
+class Bird_life():
+    """
+    こうかとんのライフを表示するクラス  
+    """
+    def __init__(self):
+        self.value = 10
+        
+        self.font = pg.font.Font(None, 50)
+        self.color = (0, 0, 255)
+        self.image = self.font.render(f"Life", 0, self.color)
+        self.rect = self.image.get_rect()
+        self.rect.center = WIDTH-100, HEIGHT-50
+
+        self.width = 1105
+        self.height = 40
+        self.image = pg.Surface((self.width,self.height),pg.SRCALPHA)
+        pg.draw.rect(self.image,(255,255,255),(0,0,self.width,self.height))
+        self.rect = self.image.get_rect()
+        
+        self.width = self.value*100+100
+        self.height = 30
+        if self.value < 3:
+            self.gauge_color = (255,0,0)
+        else:
+            self.gauge_color = (0,0,255)
+        self.image = pg.Surface((self.width,self.height),pg.SRCALPHA)
+        pg.draw.rect(self.image,self.gauge_color,(0,0,self.width,self.height))
+        self.rect = self.image.get_rect()
+
+        
+
+    def update(self, screen: pg.Surface):
+        self.width = 1105
+        self.height = 30
+        self.image = pg.Surface((self.width,self.height),pg.SRCALPHA)
+        pg.draw.rect(self.image,(255,255,255),(70,5,self.width,self.height))
+        self.rect = self.image.get_rect()
+        screen.blit(self.image, self.rect)
+
+        self.width = self.value*100+100
+        self.height = 25
+        if self.value < 3:
+            self.gauge_color = (255,0,0)
+        else:
+            self.gauge_color = (0,0,255)
+        self.image = pg.Surface((self.width,self.height),pg.SRCALPHA)
+        pg.draw.rect(self.image,self.gauge_color,(75,10,self.width,self.height))
+        self.rect = self.image.get_rect()
+        screen.blit(self.image, self.rect)
+        
+        self.image = self.font.render(f"Life", 0, self.color)
+        screen.blit(self.image, self.rect)
+        
+
+
 def main():
     pg.display.set_caption("こうかとん疾風伝")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -254,11 +320,15 @@ def main():
     bg_img2 = pg.image.load(f"fig/pg_bg.jpg")
     bg_img2 = pg.transform.flip(bg_img2,True,False)
     score = Score()
+    bird_lf = Bird_life() 
+
     bird = Bird(3, (900, 400))
     bombs = pg.sprite.Group()
     beams = pg.sprite.Group()
     exps = pg.sprite.Group()
     emys = pg.sprite.Group()
+    
+
     tmr = 0
     clock = pg.time.Clock()
     while True:
@@ -292,12 +362,37 @@ def main():
         for bomb in pg.sprite.groupcollide(bombs, beams, True, True).keys():
             exps.add(Explosion(bomb, 50))  # 爆発エフェクト
             score.value += 1  # 1点アップ
-        if len(pg.sprite.spritecollide(bird, bombs, True)) != 0:
-            bird.change_img(8, screen) # こうかとん悲しみエフェクト
-            score.update(screen)
-            pg.display.update()
-            time.sleep(2)
-            return
+        
+        for bomb in pg.sprite.spritecollide(bird, bombs, True):
+            if bird.state == "hyper": # こうかとんが無敵状態（hyper）の時
+                exps.add(Explosion(bomb, 50)) # こうかとんと爆弾が衝突時、爆弾が爆発する
+                break
+            if bird_lf.value == 1:
+                bird.change_img(8, screen) # こうかとん悲しみエフェクト
+                score.update(screen)
+                pg.display.update()
+                time.sleep(2)
+                return
+            else:
+                bird.state = "hyper" # こうかとんがhyper(無敵状態)になる
+                bird.hyper_life = 20 # 発動時間500フレーム
+                bird_lf.value -= 1
+
+            
+        for emy in pg.sprite.spritecollide(bird, emys, True):
+            if bird.state == "hyper": # こうかとんが無敵状態（hyper）の時
+                exps.add(Explosion(emy, 50)) # こうかとんと爆弾が衝突時、爆弾が爆発する
+                break
+            if bird_lf.value == 1:
+                bird.change_img(8, screen) # こうかとん悲しみエフェクト
+                score.update(screen)
+                pg.display.update()
+                time.sleep(2)
+                return
+            else:
+                bird.state = "hyper" # こうかとんがhyper(無敵状態)になる
+                bird.hyper_life = 20 # 発動時間500フレーム
+                bird_lf.value -= 1
     
 
         bird.update(key_lst, screen)
@@ -310,6 +405,7 @@ def main():
         exps.update()
         exps.draw(screen)
         score.update(screen)
+        bird_lf.update(screen)
         pg.display.update()
         tmr += 10
         clock.tick(50)
