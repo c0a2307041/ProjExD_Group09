@@ -5,7 +5,7 @@ import sys
 import time
 import pygame as pg
 
-WIDTH, HEIGHT = 1200, 700  # ゲームウィンドウの幅，高さ
+WIDTH, HEIGHT = 1600, 900  # ゲームウィンドウの幅，高さ
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def check_bound(obj_rct:pg.Rect) -> tuple[bool, bool]:
@@ -248,6 +248,7 @@ class Score:
         screen.blit(self.image, self.rect)
 
 
+#レベル上げ
 class Level:
     def __init__(self):
         self.font = pg.font.Font(None, 50)
@@ -308,7 +309,7 @@ def main():
             exps.add(Explosion(bomb, 50))  # 爆発エフェクト
             score.value += 1  # 1点アップ
 
-        
+        #レベル上げ
         if score.value > 0: # スコアが０以上の時
             level.value = score.value // 30 # スコアが30上がる度に1上がる
            
