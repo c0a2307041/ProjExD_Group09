@@ -5,7 +5,7 @@ import sys
 import time
 import pygame as pg
 
-WIDTH, HEIGHT = 1600, 900  # ゲームウィンドウの幅，高さ
+WIDTH, HEIGHT = 1000, 700  # ゲームウィンドウの幅，高さ
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def check_bound(obj_rct:pg.Rect) -> tuple[bool, bool]:
@@ -247,6 +247,32 @@ class Score:
         self.image = self.font.render(f"Score: {self.value}", 0, self.color)
         screen.blit(self.image, self.rect)
 
+
+class Boss(pg.sprite.Sprite):
+    imgs = [pg.image.load(f"fig/boss.png")]
+    
+    def __init__(self):
+        super().__init__()
+        self.image = random.choice(__class__.imgs)
+        self.rect = self.image.get_rect()
+        self.rect.center = 600, 200
+        self.vy = +6
+        self.bound = random.randint(50, HEIGHT/2)  # 停止位置
+        self.state = "down"  # 降下状態or停止状態
+        self.interval = random.randint(50, 300)  # 爆弾投下インターバル
+
+    def update(self):
+        """
+        敵機を速度ベクトルself.vyに基づき移動（降下）させる
+        ランダムに決めた停止位置_boundまで降下したら，_stateを停止状態に変更する
+        引数 screen：画面Surface
+        """
+        if self.rect.centery > self.bound:
+            self.vy = 0
+            self.state = "stop"
+        self.rect.centery += self.vy
+
+
 def main():
     pg.display.set_caption("こうかとん疾風伝")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -259,6 +285,7 @@ def main():
     beams = pg.sprite.Group()
     exps = pg.sprite.Group()
     emys = pg.sprite.Group()
+    bos = pg.sprite.Group()
     tmr = 0
     clock = pg.time.Clock()
     while True:
@@ -277,8 +304,13 @@ def main():
         screen.blit(bg_img, [-x+3200, 0])
         screen.blit(bg_img2, [-x+4800, 0])
 
+
         if tmr%2000 == 0:  # 200フレームに1回，敵機を出現させる
             emys.add(Enemy())
+
+        if score.value >= 10:
+            if len(bos)==0:
+                bos.add(Boss())
 
         for emy in emys:
             if emy.state == "stop" and tmr%emy.interval == 0:
@@ -298,6 +330,16 @@ def main():
             pg.display.update()
             time.sleep(2)
             return
+        #ボス
+        for bos in pg.sprite.groupcollide(bos, beams, True, True).keys():
+            exps.add(Explosion(emy, 100))  # 爆発エフェクト
+            score.value += 10  # 10点アップ 
+            bird.change_img(6, screen)
+            
+        if len(pg.sprite.spritecollide(bird, bos, True)) != 0:
+            pg.display.update()
+            time.sleep(2)
+            return
     
 
         bird.update(key_lst, screen)
@@ -310,6 +352,8 @@ def main():
         exps.update()
         exps.draw(screen)
         score.update(screen)
+        bos.update()
+        bos.draw(screen)
         pg.display.update()
         tmr += 10
         clock.tick(50)
