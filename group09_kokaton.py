@@ -39,10 +39,10 @@ class Bird(pg.sprite.Sprite):
     ゲームキャラクター（こうかとん）に関するクラス
     """
     delta = {  # 押下キーと移動量の辞書
-        pg.K_w: (0, -1),
-        pg.K_s: (0, +1),
-        pg.K_a: (-1, 0),
-        pg.K_d: (+1, 0),
+        pg.K_UP: (0, -1),
+        pg.K_DOWN: (0, +1),
+        pg.K_LEFT: (-1, 0),
+        pg.K_RIGHT: (+1, 0),
     }
 
     def __init__(self, num: int, xy: tuple[int, int]):
@@ -109,9 +109,9 @@ class Bird(pg.sprite.Sprite):
             self.image = self.imgs[self.dire]
         if self.state == "hyper": #stateがhyper（無敵）の時
             self.hyper_life -= 1 #1ずつ減少
-            self.image2 = pg.transform.laplacian(self.image)
-            self.images = [self.imgs[self.dire],self.image2]
-            self.image = self.images[self.hyper_life//4%2] #無敵状態の時に使う画像の表示
+            self.image2 = pg.transform.laplacian(self.image)#透明なこうかとん作成
+            self.images = [self.imgs[self.dire],self.image2]#透明なこうかとんと普通のこうかとんのリスト
+            self.image = self.images[self.hyper_life//4%2] #攻撃を受けた際に点滅するように
         if self.hyper_life < 0: #hyper_lifeが0になったら
             self.state = "normal" #stateがnormal(通常)になる ＝ 無敵解除
             self.image = self.imgs[self.dire]
@@ -260,7 +260,7 @@ class Score:
 
 class Bird_life():
     """
-    こうかとんのライフを表示するクラス  
+    こうかとんのライフを表示するクラス
     """
     def __init__(self):
         self.value = 10
@@ -270,18 +270,22 @@ class Bird_life():
         self.image = self.font.render(f"Life", 0, self.color)
         self.rect = self.image.get_rect()
         self.rect.center = WIDTH-100, HEIGHT-50
-
+        '''
+        こうかとんのライフゲージの枠設定
+        '''
         self.width = 1105
         self.height = 40
         self.image = pg.Surface((self.width,self.height),pg.SRCALPHA)
         pg.draw.rect(self.image,(255,255,255),(0,0,self.width,self.height))
         self.rect = self.image.get_rect()
-        
+        '''
+        こうかとんのライフゲージの設定  
+        '''
         self.width = self.value*100+100
         self.height = 30
-        if self.value < 3:
+        if self.value < 3: #こうかとんのライフが３以上あるときライフゲージは青色
             self.gauge_color = (255,0,0)
-        else:
+        else:              #こうかとんのライフが2以下のときライフゲージは赤色
             self.gauge_color = (0,0,255)
         self.image = pg.Surface((self.width,self.height),pg.SRCALPHA)
         pg.draw.rect(self.image,self.gauge_color,(0,0,self.width,self.height))
@@ -390,7 +394,7 @@ def main():
                 time.sleep(2)
                 return
             else:
-                bird.state = "hyper" # こうかとんがhyper(無敵状態)になる
+                bird.state = "hyper" # こうかとんがhyperになる
                 bird.hyper_life = 20 # 発動時間500フレーム
                 bird_lf.value -= 1
     
