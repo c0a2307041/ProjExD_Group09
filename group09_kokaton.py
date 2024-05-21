@@ -33,7 +33,6 @@ def calc_orientation(org: pg.Rect, dst: pg.Rect) -> tuple[float, float]:
     norm = math.sqrt(x_diff**2+y_diff**2)
     return x_diff/norm, y_diff/norm
 
-
 class Bird(pg.sprite.Sprite):
     """
     ゲームキャラクター（こうかとん）に関するクラス
@@ -247,6 +246,67 @@ class Score:
         self.image = self.font.render(f"Score: {self.value}", 0, self.color)
         screen.blit(self.image, self.rect)
 
+class Title(pg.sprite.Sprite):
+    """
+    タイトル画面に関するクラス
+    """
+
+    def __init__(self):
+        """"
+        ゲーム名の出力
+        スタートボタンの出力、及び選択時にゲーム本編が始まるようにする
+        イグジットボタンの出力、及び選択時にゲームを閉じるようにする
+        """"" 
+
+        """
+        ゲーム名の出力
+        """
+
+        self.font1 = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 150) #フォント、文字の大きさの設定
+        self.text1 = ("こうかとん") #文字の設定
+        self.color1 = (255, 0, 0) #色の設定
+        self.image1 = self.font1.render(self.text1, 0, self.color1) 
+        self.rect1 = self.image1.get_rect()
+        self.rect1.center = (800, 450) #文字の配置場所の設定
+
+        self.font2 = pg.font.SysFont("hg正楷書体pro", 100) #フォント、文字の大きさの設定
+        self.text2 = ("疾風伝") #文字の設定
+        self.color2 = (255, 255, 255) #色の設定
+        self.image2 = self.font2.render(self.text2, 0, self.color2)
+        self.rect2 = self.image2.get_rect()
+        self.rect2.center = (950, 500) #文字の配置場所の設定
+
+        """
+        スタートボタンの出力
+        """
+        self.font3 = pg.font.Font(None, 100) #フォント、文字の大きさの設定
+        self.text3 = ("Start") #文字の設定
+        self.color3 = (255, 255, 255) #色の設定
+        self.image3 = self.font3.render(self.text3, 0, self.color3)
+        self.rect3 = self.image3.get_rect()
+        self.rect3.center = (400, HEIGHT-100) #文字の配置場所の設定
+        # if event.key == pg.K_SPACE:
+
+        #     pg.K_LEFT
+        #     pg.K_RIGHT
+
+
+        """
+        イグジットボタンの出力
+        """
+        self.font4 = pg.font.Font(None, 100) #フォント、文字の大きさの設定
+        self.text4 = ("Exit") #文字の設定
+        self.color4 = (255, 255, 255) #色の設定
+        self.image4 = self.font4.render(self.text4, 0, self.color4)
+        self.rect4 = self.image4.get_rect()
+        self.rect4.center = (1100, HEIGHT-100) #文字の配置場所の設定
+
+    def update(self, screen: pg.Surface):
+        screen.blit(self.image1, self.rect1) #こうかとん
+        screen.blit(self.image2, self.rect2) #疾風伝
+        screen.blit(self.image3, self.rect3) #Start
+        screen.blit(self.image4, self.rect4) #Exit
+
 def main():
     pg.display.set_caption("こうかとん疾風伝")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -261,6 +321,16 @@ def main():
     emys = pg.sprite.Group()
     tmr = 0
     clock = pg.time.Clock()
+
+    """
+    タイトル画面の出力
+    """
+    title = Title()
+    title.update(screen)
+    pg.display.update()
+    time.sleep(5)
+    ###
+
     while True:
         bird.bird_check() 
         key_lst = pg.key.get_pressed()
