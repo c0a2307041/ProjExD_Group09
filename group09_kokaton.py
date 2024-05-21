@@ -5,7 +5,7 @@ import sys
 import time
 import pygame as pg
 
-WIDTH, HEIGHT = 1600, 900  # ゲームウィンドウの幅，高さ
+WIDTH, HEIGHT = 1200, 700  # ゲームウィンドウの幅，高さ
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def check_bound(obj_rct:pg.Rect) -> tuple[bool, bool]:
@@ -247,6 +247,20 @@ class Score:
         self.image = self.font.render(f"Score: {self.value}", 0, self.color)
         screen.blit(self.image, self.rect)
 
+
+class Level:
+    def __init__(self):
+        self.font = pg.font.Font(None, 50)
+        self.color = (0, 0, 255)
+        self.value = 0
+        self.image = self.font.render(f"Level: {self.value}", 0, self.color)
+        self.rect = self.image.get_rect()
+        self.rect.center = 100, 50
+
+    def update(self, screen: pg.Surface):
+        self.image = self.font.render(f"Level: {self.value}", 0, self.color)
+        screen.blit(self.image, self.rect)  
+
 def main():
     pg.display.set_caption("こうかとん疾風伝")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -261,6 +275,7 @@ def main():
     emys = pg.sprite.Group()
     tmr = 0
     clock = pg.time.Clock()
+    level = Level()
     while True:
         bird.bird_check() 
         key_lst = pg.key.get_pressed()
@@ -292,9 +307,16 @@ def main():
         for bomb in pg.sprite.groupcollide(bombs, beams, True, True).keys():
             exps.add(Explosion(bomb, 50))  # 爆発エフェクト
             score.value += 1  # 1点アップ
+
+        
+        if score.value > 0: # スコアが０以上の時
+            level.value = score.value // 30 # スコアが30上がる度に1上がる
+           
+
         if len(pg.sprite.spritecollide(bird, bombs, True)) != 0:
             bird.change_img(8, screen) # こうかとん悲しみエフェクト
             score.update(screen)
+            level.update(screen)
             pg.display.update()
             time.sleep(2)
             return
@@ -310,6 +332,7 @@ def main():
         exps.update()
         exps.draw(screen)
         score.update(screen)
+        level.update(screen)
         pg.display.update()
         tmr += 10
         clock.tick(50)
