@@ -77,6 +77,8 @@ class Bird(pg.sprite.Sprite):
         key_lst = pg.key.get_pressed()
         if key_lst[pg.K_LSHIFT]:
             self.speed = 20
+        else:
+            self.speed = 10
 
 
     def change_img(self, num: int, screen: pg.Surface):
@@ -247,6 +249,43 @@ class Score:
         self.image = self.font.render(f"Score: {self.value}", 0, self.color)
         screen.blit(self.image, self.rect)
 
+class item(pg.sprite.Sprite):
+    """
+    アイテムを表示させるクラス
+    """
+    imx = 200 #画像の横幅
+    imy = 150 #画像の縦幅
+
+    def __init__(self):
+        super().__init__()
+        self.yoko :bool = True #横にはみだしているかどうか
+        self.img1 = pg.image.load("fig/r_item1.png") #画像ロード
+        self.img2 = pg.image.load("fig/ramen.jpg") 
+        self.img3 = pg.image.load("fig/gyoza.jpg")
+        self.lis = [pg.transform.scale(self.img1,(item.imx,item.imy)),
+                    pg.transform.scale(self.img2,(item.imx,item.imy)),
+                    pg.transform.scale(self.img3,(item.imx,item.imy))] #画像サイズ変更
+        self.image = random.choice(self.lis) #画像リストから出すアイテムをランダムに選ぶ
+        self.y = random.randint(100,HEIGHT-100) #アイテムのy軸は全体が見える位置に出す
+        self.rect = self.image.get_rect() 
+        self.rect.center = WIDTH,self.y #初期位置は右端
+
+    def update(self):
+        """
+        アイテムを右から左に流れるようにする処理
+        アイテムが左に見えなくなるまで流れたらグループから削除する処理
+        """
+        #self.rect.move_ip((-10,0))
+        self.rect.move_ip(-10,0)
+        if self.rect.right < 0:  # 横方向のはみ出し判定
+            self.yoko :bool = False
+        if not self.yoko: 
+            self.kill()  #はみ出た画像削除
+            
+        
+        
+
+
 def main():
     pg.display.set_caption("こうかとん疾風伝")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -259,9 +298,22 @@ def main():
     beams = pg.sprite.Group()
     exps = pg.sprite.Group()
     emys = pg.sprite.Group()
+    items = pg.sprite.Group() #アイテム
+
+    muteki :bool = False #無敵かどうか
+    muteki_time :int = 0 #無敵時間カウント
+    muteki_rt :int = 300 #無敵継続時間
+
     tmr = 0
+
+    font = pg.font.Font(None, 150) #フォント指定
+    
+
     clock = pg.time.Clock()
     while True:
+        if  tmr%500 == 0:
+            items.add(item()) #アイテム追加
+
         bird.bird_check() 
         key_lst = pg.key.get_pressed()
         for event in pg.event.get():
@@ -292,12 +344,38 @@ def main():
         for bomb in pg.sprite.groupcollide(bombs, beams, True, True).keys():
             exps.add(Explosion(bomb, 50))  # 爆発エフェクト
             score.value += 1  # 1点アップ
-        if len(pg.sprite.spritecollide(bird, bombs, True)) != 0:
-            bird.change_img(8, screen) # こうかとん悲しみエフェクト
-            score.update(screen)
-            pg.display.update()
-            time.sleep(2)
-            return
+            
+        if not muteki:
+            if len(pg.sprite.spritecollide(bird, bombs, True)) != 0:
+                bird.change_img(8, screen) # こうかとん悲しみエフェクト
+                score.update(screen)
+                pg.display.update()
+                time.sleep(2)
+                return
+        
+        if pg.sprite.spritecollide(bird,items,True): #アイテム取ったら
+            bird.change_img(6,screen) #喜ぶ
+            if muteki: #既に無敵なら
+                muteki_rt += 30 #無敵時間が30秒増える
+            else:
+                muteki = True #無敵になる
+        if muteki: #無敵ならば
+            muteki_time += 1 #無敵時間計測
+            #score.value += 1 #スコア上がり
+            bird.speed = 50  #スピードも一時的に上がる
+            image = font.render(f"INVINCIBLE TIME:{muteki_rt-muteki_time}", 0, (random.randint(0,255),random.randint(0,255),random.randint(0,255)))
+            screen.blit(image, (WIDTH/10,HEIGHT/2))
+            bird.change_img(9,screen)
+            
+        if muteki_time > muteki_rt: #無敵時間なければ
+            muteki = False
+            muteki_time = 0
+            bird.speed = 10
+            muteki_rt = 300
+
+            
+
+
     
 
         bird.update(key_lst, screen)
@@ -310,9 +388,11 @@ def main():
         exps.update()
         exps.draw(screen)
         score.update(screen)
+        items.update()
+        items.draw(screen)
         pg.display.update()
         tmr += 10
-        clock.tick(50)
+        clock.tick(50) #50
 
 
 if __name__ == "__main__":
