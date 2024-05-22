@@ -281,8 +281,8 @@ class Bird_life():
         '''
         こうかとんのライフゲージの設定  
         '''
-        self.width = self.value*100+100
-        self.height = 30
+        self.width = self.value*100
+        self.height = 25
         if self.value < 3: #こうかとんのライフが３以上あるときライフゲージは青色
             self.gauge_color = (255,0,0)
         else:              #こうかとんのライフが2以下のときライフゲージは赤色
@@ -294,14 +294,14 @@ class Bird_life():
         
 
     def update(self, screen: pg.Surface):
-        self.width = 1105
+        self.width = 1080
         self.height = 30
         self.image = pg.Surface((self.width,self.height),pg.SRCALPHA)
         pg.draw.rect(self.image,(255,255,255),(70,5,self.width,self.height))
         self.rect = self.image.get_rect()
         screen.blit(self.image, self.rect)
 
-        self.width = self.value*100+100
+        self.width = self.value*100+75
         self.height = 25
         if self.value < 3:
             self.gauge_color = (255,0,0)
@@ -374,12 +374,14 @@ def main():
             if bird_lf.value == 1:
                 bird.change_img(8, screen) # こうかとん悲しみエフェクト
                 score.update(screen)
+                bird_lf.value -= 1
+                bird_lf.update(screen)
                 pg.display.update()
                 time.sleep(2)
                 return
             else:
                 bird.state = "hyper" # こうかとんがhyper(無敵状態)になる
-                bird.hyper_life = 20 # 発動時間500フレーム
+                bird.hyper_life = 20 # 発動時間20フレーム
                 bird_lf.value -= 1
 
             
@@ -390,12 +392,14 @@ def main():
             if bird_lf.value == 1:
                 bird.change_img(8, screen) # こうかとん悲しみエフェクト
                 score.update(screen)
+                bird_lf.value -= 1
+                bird_lf.update(screen)
                 pg.display.update()
                 time.sleep(2)
                 return
             else:
                 bird.state = "hyper" # こうかとんがhyperになる
-                bird.hyper_life = 20 # 発動時間500フレーム
+                bird.hyper_life = 20 # 発動時間20フレーム
                 bird_lf.value -= 1
     
 
