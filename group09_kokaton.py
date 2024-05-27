@@ -282,9 +282,6 @@ class item(pg.sprite.Sprite):
         if not self.yoko: 
             self.kill()  #はみ出た画像削除
             
-        
-        
-
 
 def main():
     pg.display.set_caption("こうかとん疾風伝")
@@ -372,10 +369,6 @@ def main():
             muteki_time = 0
             bird.speed = 10
             muteki_rt = 300
-
-            
-
-
     
 
         bird.update(key_lst, screen)
