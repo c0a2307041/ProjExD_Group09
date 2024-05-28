@@ -5,7 +5,7 @@ import sys
 import time
 import pygame as pg
 
-WIDTH, HEIGHT = 1000, 700  # ゲームウィンドウの幅，高さ
+WIDTH, HEIGHT = 1600, 900  # ゲームウィンドウの幅，高さ
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def check_bound(obj_rct:pg.Rect) -> tuple[bool, bool]:
@@ -252,54 +252,20 @@ class Score:
 
 
 class Boss(pg.sprite.Sprite):
-    imgs = [pg.image.load(f"fig/boss.png")]
+    imgs = [(pg.image.load(f"fig/alien-grey.png"))]
+    #sc_img = pg.transform.scale(imgs,())
+    
 
     def __init__(self):
         super().__init__()
         self.image = random.choice(__class__.imgs)
         self.rect = self.image.get_rect()
-        self.rect.center = 600, 200
+        self.rect.center = 1300, 200
         self.vy = +6
-        self.bound = 600,200  # 停止位置
+        self.bound = 1300,200  # 停止位置
         self.state = "down"  # 降下状態or停止状態
         self.interval = random.randint(50, 300)  # 爆弾投下インターバル
         
-"""
-   def update(self):
-        
-        #敵機を速度ベクトルself.vyに基づき移動（降下）させる
-        #ランダムに決めた停止位置_boundまで降下したら，_stateを停止状態に変更する
-        #引数 screen：画面Surface
-        
-        if self.rect.centery > self.bound:
-            self.vy = 0
-            self.state = "stop"
-        self.rect.centery += self.vy
-    """
-    # def __init__(self):
-    #     super().__init__()
-    #     self.value = 5
-    #     self.image = random.choice(__class__.imgs)
-    #     self.rect = self.image.get_rect()
-    #     self.rect.center = 600, 200
-    #     self.vy = +6
-    #     self.bound = random.randint(50, HEIGHT/2)  # 停止位置
-    #     self.state = "down"  # 降下状態or停止状態
-    #     self.interval = random.randint(50, 300)  # 爆弾投下インターバル 
-    # def update(self):
-    #     """
-    #     敵機を速度ベクトルself.vyに基づき移動（降下）させる
-    #     ランダムに決めた停止位置_boundまで降下したら，_stateを停止状態に変更する
-    #     引数 screen：画面Surface
-    #     """
-    #     if self.rect.centery > self.bound:
-    #         self.vy = 0
-    #         self.state = "stop"
-    #     self.rect.centery += self.vy
-    #     if self.value <= 0:
-    #         self.kill()
-
-
 
 def main():
     pg.display.set_caption("こうかとん疾風伝")
@@ -365,13 +331,13 @@ def main():
         for bomb in pg.sprite.groupcollide(bombs, beams, True, True).keys():
             exps.add(Explosion(bomb, 50))  # 爆発エフェクト
             score.value += 1  # 1点アップ
-        if len(pg.sprite.spritecollide(bird, bombs, True)) != 0:
+        """if len(pg.sprite.spritecollide(bird, bombs, True)) != 0:
             bird.change_img(8, screen) # こうかとん悲しみエフェクト
             score.update(screen)
             pg.display.update()
             time.sleep(2)
             return
-        
+        """
         #ボス
         
         
@@ -384,8 +350,15 @@ def main():
             else:
                 bird.change_img(1, screen) # こうかとん悲しみエフェクト
                 score.update(screen)
+                rct = pg.Surface((1600, 900))
+                fonto = pg.font.Font(None, 80) 
+                pg.draw.rect(rct, (0, 0, 0), (0,0,1600,900)) 
+                txt = fonto.render("GAME CLEAR!", True, (0, 0, 0))
+                rct.set_alpha(200)
+                #screen.blit(rct, [0,0]) #画面を暗く
+                screen.blit(txt, [650, 450]) 
                 pg.display.update()
-                time.sleep(2)
+                time.sleep(3)
                 return
                 
         # if bos.value == 0:
