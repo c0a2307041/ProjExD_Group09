@@ -312,7 +312,7 @@ def main():
         score.update(screen)
         pg.display.update()
         tmr += 10
-        clock.tick(50)
+        clock.tick(5)
 
 
 if __name__ == "__main__":
