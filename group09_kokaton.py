@@ -254,13 +254,14 @@ class Level:
         self.font = pg.font.Font(None, 50)
         self.color = (0, 0, 255)
         self.value = 0
-        self.image = self.font.render(f"Level: {self.value}", 0, self.color)
+        self.image = self.font.render(f"Level: {self.value}", 0, self.color) #レベルの表示
         self.rect = self.image.get_rect()
-        self.rect.center = 100, 50
+        self.rect.center = 100, 100 #座標
 
     def update(self, screen: pg.Surface):
         self.image = self.font.render(f"Level: {self.value}", 0, self.color)
         screen.blit(self.image, self.rect)  
+
 
 def main():
     pg.display.set_caption("こうかとん疾風伝")
