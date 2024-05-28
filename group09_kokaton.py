@@ -258,6 +258,22 @@ class Score:
         screen.blit(self.image, self.rect)
 
 
+#レベル上げ
+class Level:
+    def __init__(self):
+        self.font = pg.font.Font(None, 50)
+        self.color = (0, 0, 255)
+        self.value = 0
+        self.image = self.font.render(f"Level: {self.value}", 0, self.color) #レベルの表示
+        self.rect = self.image.get_rect()
+        self.rect.center = 1500, 25 #座標
+
+    def update(self, screen: pg.Surface):
+        self.image = self.font.render(f"Level: {self.value}", 0, self.color)
+        screen.blit(self.image, self.rect)  
+
+
+
 class Bird_life():
     """
     こうかとんのライフを表示するクラス
@@ -335,6 +351,7 @@ def main():
 
     tmr = 0
     clock = pg.time.Clock()
+    level = Level()
     while True:
         bird.bird_check() 
         key_lst = pg.key.get_pressed()
@@ -366,6 +383,10 @@ def main():
         for bomb in pg.sprite.groupcollide(bombs, beams, True, True).keys():
             exps.add(Explosion(bomb, 50))  # 爆発エフェクト
             score.value += 1  # 1点アップ
+
+            #レベル上げ
+        if score.value > 0: #スコア０以上の時
+            level.value = score.value // 30 # スコアが３０上がるたびに1上がる
         
         for bomb in pg.sprite.spritecollide(bird, bombs, True):
             if bird.state == "hyper": # こうかとんが無敵状態（hyper）の時
@@ -374,6 +395,7 @@ def main():
             if bird_lf.value == 1:
                 bird.change_img(8, screen) # こうかとん悲しみエフェクト
                 score.update(screen)
+                level.update(screen)
                 bird_lf.value -= 1
                 bird_lf.update(screen)
                 
@@ -415,6 +437,7 @@ def main():
         exps.draw(screen)
         score.update(screen)
         bird_lf.update(screen)
+        level.update(screen)
         pg.display.update()
         tmr += 10
         clock.tick(50)
