@@ -394,7 +394,7 @@ def main():
                 bird.change_img(8, screen) # こうかとん悲しみエフェクト
                 score.update(screen)
                 bird_lf.value -= 1
-                bird_lf.update(screen)
+                bird_lf.update(screen) 
                 pg.display.update()
                 time.sleep(2)
                 return
