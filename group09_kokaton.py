@@ -514,7 +514,8 @@ def main():
 
         if tmr%2000 == 0:  # 200フレームに1回，敵機を出現させる
             if len(boss)==0:
-                emys.add(Enemy())
+                for i in range(level.value):
+                    emys.add(Enemy())
 
         #ボス出現条件
         if level.value == 10:
